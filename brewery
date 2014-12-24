@@ -1,0 +1,15 @@
+#!/usr/bin/ruby
+
+system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
+system 'xcode-select --install' unless Dir.exist?('/usr/include')
+
+brewfile = './Brewfile'
+
+File.open(brewfile) do |file|
+  file.each_line do |line|
+    line.strip!
+    line.gsub!(/\s*#.*/, '')
+    next if line.empty?
+    system "brew #{line}"
+  end
+end
