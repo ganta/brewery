@@ -2,8 +2,12 @@
 
 require 'optparse'
 
-options = ARGV.getopts('', 'file:Brewfile', '[no-]update')
-options['update'] = true if options['update'].nil?
+SPECIAL_COMMANDS = ['update', 'upgrade'].freeze
+
+options = ARGV.getopts('', 'file:Brewfile', '[no-]update', '[no-]upgrade')
+SPECIAL_COMMANDS.each do |command|
+  options[command] = true if options[command].nil?
+end
 
 system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
 system 'xcode-select --install' unless Dir.exist?('/usr/include')
@@ -16,7 +20,9 @@ def exec_brew(command, args = [])
   system command_line
 end
 
-exec_brew 'update' if options['update']
+SPECIAL_COMMANDS.each do |command|
+  exec_brew command if options[command]
+end
 
 File.open(brewfile) do |file|
   file.each_line do |line|
@@ -24,7 +30,7 @@ File.open(brewfile) do |file|
     line.gsub!(/\s*#.*/, '')
     next if line.empty?
     command, *args = line.split(/\s/)
-    next if command == 'update'
+    next if SPECIAL_COMMANDS.include?(command)
     exec_brew command, args
   end
 end
