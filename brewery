@@ -3,10 +3,12 @@
 require 'optparse'
 
 SPECIAL_COMMANDS = ['update', 'upgrade'].freeze
+ignore_commands = []
 
 options = ARGV.getopts('', 'file:Brewfile', '[no-]update', '[no-]upgrade')
 SPECIAL_COMMANDS.each do |command|
-  options[command] = true if options[command].nil?
+  # The commands that are ignored in Brewfile when explicitly specified.
+  ignore_commands << command unless options[command].nil?
 end
 
 system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
@@ -30,7 +32,7 @@ File.open(brewfile) do |file|
     line.gsub!(/\s*#.*/, '')
     next if line.empty?
     command, *args = line.split(/\s/)
-    next if SPECIAL_COMMANDS.include?(command)
+    next if ignore_commands.include?(command)
     exec_brew command, args
   end
 end
