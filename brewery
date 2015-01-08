@@ -2,8 +2,8 @@
 
 require 'optparse'
 
-BEFORE_COMMANDS = ['update', 'upgrade'].freeze
-AFTER_COMMANDS = ['cleanup'].freeze
+BEFORE_COMMANDS = %w(update upgrade).freeze
+AFTER_COMMANDS = %w(cleanup).freeze
 ignore_commands = []
 
 @options = ARGV.getopts('', 'file:Brewfile', '[no-]update', '[no-]upgrade', '[no-]cleanup')
