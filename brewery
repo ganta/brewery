@@ -2,14 +2,29 @@
 
 require 'optparse'
 
-BEFORE_COMMANDS = %w(update upgrade).freeze
-AFTER_COMMANDS = %w(cleanup).freeze
+class BrewCommand
+  attr_reader :name
+
+  def initialize(name, args = [])
+    @name = name
+    @args = args
+  end
+
+  def exec
+    command_line = "brew #{@name} #{@args.join(' ')}"
+    puts command_line
+    system command_line
+  end
+end
+
+BEFORE_COMMANDS = [BrewCommand.new('update'), BrewCommand.new('upgrade')].freeze
+AFTER_COMMANDS = [BrewCommand.new('cleanup')].freeze
 ignore_commands = []
 
 @options = ARGV.getopts('', 'file:Brewfile', '[no-]update', '[no-]upgrade', '[no-]cleanup')
 (BEFORE_COMMANDS + AFTER_COMMANDS).each do |command|
   # The commands that are ignored in Brewfile when explicitly specified.
-  ignore_commands << command unless @options[command].nil?
+  ignore_commands << command unless @options[command.name].nil?
 end
 
 system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
@@ -17,15 +32,9 @@ system 'xcode-select --install' unless Dir.exist?('/usr/include')
 
 brewfile = @options['file']
 
-def exec_brew(command, args = [])
-  command_line = "brew #{command} #{args.join(' ')}"
-  puts command_line
-  system command_line
-end
-
 def exec_commands(commands)
   commands.each do |command|
-    exec_brew command if @options[command]
+    command.exec if @options[command.name]
   end
 end
 
@@ -36,9 +45,10 @@ File.open(brewfile) do |file|
     line.strip!
     line.gsub!(/\s*#.*/, '')
     next if line.empty?
-    command, *args = line.split(/\s/)
-    next if ignore_commands.include?(command)
-    exec_brew command, args
+    name, *args = line.split(/\s/)
+    command = BrewCommand.new(name, args)
+    next if ignore_commands.any? { |ignore_command| command.name == ignore_command.name }
+    command.exec
   end
 end
 
