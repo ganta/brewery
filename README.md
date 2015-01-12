@@ -41,6 +41,17 @@ Examples:
     Brewfile
     $ brewery
 
+### Options
+
+* -f /path/to/Brewfile, --file /path/to/Brewfile
+    * specify the Brewfile path.
+* --[no]-update
+    * brew update forcibly before execute commands.
+* --[no]-upgrade
+    * brew upgrade forcibly before execute commands.
+* --[no]-cleanup
+    * brew cleanup forcibly after execute commands.
+
 
 Install
 -------
