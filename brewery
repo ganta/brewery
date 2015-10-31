@@ -13,7 +13,9 @@ class BrewCommand
   def exec
     command_line = "brew #{@name} #{@args.join(' ')}"
     puts command_line
-    system command_line
+    unless system command_line
+      exit 1
+    end
   end
 end
 
@@ -27,8 +29,8 @@ ignore_commands = []
   ignore_commands << command unless @options[command.name].nil?
 end
 
-system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
-system 'xcode-select --install' unless Dir.exist?('/usr/include')
+exit 1 unless system 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"' unless system 'type brew'
+exit 1 unless system 'xcode-select --install' unless Dir.exist?('/usr/include')
 
 brewfile = @options['file']
 
